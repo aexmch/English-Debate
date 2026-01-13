@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debate Coach AI - ESL 辯論練習平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .timer-running { color: #ef4444; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white py-8 px-4 shadow-lg">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl font-bold mb-2">Debate Mastery Hub</h1>
+            <p class="text-indigo-100 italic">20-Hour English Debate Journey for High Schoolers</p>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b sticky top-0 z-10 overflow-x-auto">
+        <div class="max-w-5xl mx-auto flex whitespace-nowrap">
+            <button onclick="showTab('phase1')" class="tab-btn px-6 py-4 font-semibold text-indigo-600 border-b-2 border-indigo-600 active" data-target="phase1">1. 論證結構</button>
+            <button onclick="showTab('phase2')" class="tab-btn px-6 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition" data-target="phase2">2. 利害關係</button>
+            <button onclick="showTab('phase3')" class="tab-btn px-6 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition" data-target="phase3">3. 反駁工作坊</button>
+            <button onclick="showTab('phase4')" class="tab-btn px-6 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition" data-target="phase4">4. 邏輯謬誤</button>
+            <button onclick="showTab('phase5')" class="tab-btn px-6 py-4 font-semibold text-slate-500 hover:text-indigo-600 transition" data-target="phase5">5. 即興演說</button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <!-- Phase 1: AREL Builder -->
+        <section id="phase1" class="tab-content active">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-indigo-500">
+                <h2 class="text-2xl font-bold mb-4 text-indigo-700"><i class="fas fa-hammer mr-2"></i>AREL 論證產生器</h2>
+                <p class="mb-6 text-slate-600">這是辯論的靈魂。練習將你的想法填入以下結構，系統會幫你組合成一段專業的論點。</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-bold mb-1">Assertion (主張): <span class="text-sm font-normal text-slate-500">一句話說出你的核心重點</span></label>
+                        <input id="arel-a" type="text" placeholder="e.g., Uniforms should be mandatory." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Reasoning (理由): <span class="text-sm font-normal text-slate-500">為什麼你的主張是正確的？</span></label>
+                        <textarea id="arel-r" rows="2" placeholder="e.g., Because it reduces social pressure and bullying based on clothes." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Evidence (證據): <span class="text-sm font-normal text-slate-500">舉例或提供數據</span></label>
+                        <textarea id="arel-e" rows="2" placeholder="e.g., A study in the US showed that 60% of students felt safer..." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-bold mb-1">Link-back (回扣): <span class="text-sm font-normal text-slate-500">總結為什麼這對題目很重要</span></label>
+                        <input id="arel-l" type="text" placeholder="e.g., Therefore, uniforms create a better learning environment." class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none">
+                    </div>
+                </div>
+
+                <button onclick="generateAREL()" class="mt-6 w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-md">
+                    產出完整論點稿
+                </button>
+
+                <div id="arel-result" class="hidden mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <h3 class="font-bold text-indigo-800 mb-2">你的辯詞：</h3>
+                    <p id="arel-text" class="text-slate-700 leading-relaxed italic"></p>
+                    <button onclick="copyAREL()" class="mt-3 text-sm text-indigo-600 font-semibold underline">複製到剪貼簿</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 2: Stakeholder Matching -->
+        <section id="phase2" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-emerald-500">
+                <h2 class="text-2xl font-bold mb-4 text-emerald-700"><i class="fas fa-users mr-2"></i>Stakeholder Analysis (利害關係)</h2>
+                <p class="mb-4 text-slate-600">針對不同的辯題，你會從哪些角度思考？選擇一個題目，看看你可以代表誰說話。</p>
+                
+                <div class="mb-6">
+                    <select id="motion-selector" class="w-full p-3 border rounded-lg bg-emerald-50 border-emerald-200 outline-none font-semibold text-emerald-800">
+                        <option value="school">Motion: Schools should ban all smartphones.</option>
+                        <option value="junkfood">Motion: Governments should tax junk food heavily.</option>
+                        <option value="zoo">Motion: This House would ban all zoos.</option>
+                    </select>
+                </div>
+
+                <div id="stakeholder-grid" class="grid grid-cols-2 gap-4">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 3: Rebuttal Training -->
+        <section id="phase3" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-rose-500">
+                <h2 class="text-2xl font-bold mb-4 text-rose-700"><i class="fas fa-shield-alt mr-2"></i>Rebuttal Workshop (反駁練習)</h2>
+                <p class="mb-6 text-slate-600">對方說了什麼？用「四步法」擊敗他們。點擊「挑戰」獲得一條對手論點。</p>
+                
+                <div class="bg-rose-50 border border-rose-200 p-4 rounded-lg mb-6">
+                    <p class="text-sm font-bold text-rose-600">對手的主張 (Opponent's Claim):</p>
+                    <p id="opponent-claim" class="text-lg italic font-semibold text-slate-800">"Public transport should be free because it helps poor people."</p>
+                    <button onclick="refreshClaim()" class="mt-2 text-xs bg-white px-2 py-1 border border-rose-300 rounded text-rose-600">換個挑戰</button>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-rose-500 text-white px-2 py-1 rounded text-sm font-bold">1</span>
+                        <p class="font-semibold">"They say..." <span class="font-normal text-slate-400 italic">(Repeat their point)</span></p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-rose-500 text-white px-2 py-1 rounded text-sm font-bold">2</span>
+                        <p class="font-semibold">"But I disagree because..." <span class="font-normal text-slate-400 italic">(Logic flaw)</span></p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-rose-500 text-white px-2 py-1 rounded text-sm font-bold">3</span>
+                        <p class="font-semibold">"Therefore..." <span class="font-normal text-slate-400 italic">(Impact)</span></p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-rose-500 text-white px-2 py-1 rounded text-sm font-bold">4</span>
+                        <p class="font-semibold">"Furthermore..." <span class="font-normal text-slate-400 italic">(New angle)</span></p>
+                    </div>
+                </div>
+                <textarea id="rebuttal-input" rows="4" placeholder="在這裡練習寫下你的反駁..." class="mt-4 w-full p-3 border rounded-lg focus:ring-2 focus:ring-rose-300 outline-none"></textarea>
+            </div>
+        </section>
+
+        <!-- Phase 4: Fallacy Quiz -->
+        <section id="phase4" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-amber-500">
+                <h2 class="text-2xl font-bold mb-4 text-amber-700"><i class="fas fa-search mr-2"></i>邏輯謬誤偵探</h2>
+                <div id="quiz-container">
+                    <p class="mb-4 text-slate-600">對方的邏輯哪裡出了錯？辨識以下句子的謬誤類型。</p>
+                    <div class="bg-slate-100 p-6 rounded-lg text-center mb-6">
+                        <p id="fallacy-q" class="text-xl font-bold">"If we allow students to use tablets in class, they will stop thinking entirely and soon the human race will become robots!"</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button onclick="checkFallacy(this, 'Slippery Slope')" class="p-3 border-2 border-slate-200 rounded-lg hover:border-amber-400 transition font-semibold">Slippery Slope (滑坡謬誤)</button>
+                        <button onclick="checkFallacy(this, 'Ad Hominem')" class="p-3 border-2 border-slate-200 rounded-lg hover:border-amber-400 transition font-semibold">Ad Hominem (人身攻擊)</button>
+                        <button onclick="checkFallacy(this, 'False Dilemma')" class="p-3 border-2 border-slate-200 rounded-lg hover:border-amber-400 transition font-semibold">False Dilemma (錯誤二分)</button>
+                        <button onclick="checkFallacy(this, 'Strawman')" class="p-3 border-2 border-slate-200 rounded-lg hover:border-amber-400 transition font-semibold">Strawman (稻草人謬誤)</button>
+                    </div>
+                    <p id="quiz-feedback" class="mt-4 text-center font-bold hidden"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 5: Table Topics Arena -->
+        <section id="phase5" class="tab-content">
+            <div class="bg-white rounded-xl shadow-md p-6 border-t-4 border-blue-500">
+                <h2 class="text-2xl font-bold mb-4 text-blue-700"><i class="fas fa-microphone-alt mr-2"></i>Table Topics (即興演說)</h2>
+                <p class="mb-6 text-slate-600">隨機抽取一個有趣題目，並在限定時間內發表看法。這能大幅提升你的英文反應力！</p>
+                
+                <div class="text-center py-8 px-4 bg-blue-50 rounded-xl mb-6">
+                    <h3 id="random-topic" class="text-2xl font-bold text-blue-900 mb-4">點擊下方按鈕開始</h3>
+                    <div id="timer-display" class="text-5xl font-mono font-bold text-slate-400 mb-6">01:00</div>
+                    <div class="flex justify-center space-x-3">
+                        <button onclick="newTopic()" class="bg-blue-600 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-blue-700">抽題目</button>
+                        <button id="timer-btn" onclick="toggleTimer()" class="bg-slate-600 text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-slate-700" disabled>開始計時</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-4 rounded-lg">
+                    <p class="font-bold mb-2 text-sm text-slate-500 uppercase">演說小撇步 (Tips):</p>
+                    <ul class="text-sm space-y-1 text-slate-600 list-disc ml-5">
+                        <li>Don't be afraid to pause for 2 seconds.</li>
+                        <li>Use "In fact," "Actually," or "On the flip side."</li>
+                        <li>End with a strong summary sentence.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-400 text-sm">
+        Designed for ESL Students | English Debate Academy &copy; 2024
+    </footer>
+
+    <script>
+        // Tab Management
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-indigo-600', 'border-indigo-600', 'border-b-2');
+                btn.classList.add('text-slate-500');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
+            activeBtn.classList.remove('text-slate-500');
+            activeBtn.classList.add('text-indigo-600', 'border-indigo-600', 'border-b-2');
+        }
+
+        // Phase 1: AREL Logic
+        function generateAREL() {
+            const a = document.getElementById('arel-a').value;
+            const r = document.getElementById('arel-r').value;
+            const e = document.getElementById('arel-e').value;
+            const l = document.getElementById('arel-l').value;
+
+            if(!a || !r) {
+                alert("請至少輸入 Assertion 與 Reasoning！");
+                return;
+            }
+
+            const text = `I firmly believe that ${a}. The main reason is that ${r}. For example, ${e}. That is why I conclude that ${l}.`;
+            document.getElementById('arel-text').innerText = text;
+            document.getElementById('arel-result').classList.remove('hidden');
+        }
+
+        function copyAREL() {
+            const text = document.getElementById('arel-text').innerText;
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert("已複製到剪貼簿！");
+        }
+
+        // Phase 2: Stakeholders
+        const stakeholderData = {
+            school: [
+                { role: "Students", perspective: "Will they be safer or bored?" },
+                { role: "Teachers", perspective: "Will it reduce distractions in class?" },
+                { role: "Parents", perspective: "Can they reach kids in emergencies?" },
+                { role: "Tech Companies", perspective: "Loss of educational tool market." }
+            ],
+            junkfood: [
+                { role: "Health Dept", perspective: "Lowering obesity rates and costs." },
+                { role: "Low-income Families", perspective: "Will food become too expensive?" },
+                { role: "Fast Food Industry", perspective: "Loss of profit and potential jobs." },
+                { role: "Doctors", perspective: "Fewer lifestyle-related diseases." }
+            ],
+            zoo: [
+                { role: "Animals", perspective: "Rights to live in a natural habitat." },
+                { role: "Scientists", perspective: "Loss of research opportunities." },
+                { role: "Local Tourists", perspective: "Educational value for children." },
+                { role: "Zookeepers", perspective: "Impact on professional conservation." }
+            ]
+        };
+
+        function updateStakeholders() {
+            const motion = document.getElementById('motion-selector').value;
+            const grid = document.getElementById('stakeholder-grid');
+            grid.innerHTML = '';
+            stakeholderData[motion].forEach(item => {
+                grid.innerHTML += `
+                    <div class="p-4 border-2 border-emerald-100 rounded-lg hover:bg-emerald-50 transition card">
+                        <div class="font-bold text-emerald-700 underline mb-1">${item.role}</div>
+                        <p class="text-sm text-slate-600">${item.perspective}</p>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('motion-selector').addEventListener('change', updateStakeholders);
+        updateStakeholders();
+
+        // Phase 3: Rebuttal
+        const claims = [
+            "Homework should be banned because it stresses students out.",
+            "Video games are bad because they make kids violent.",
+            "Everyone should be vegan to save the environment.",
+            "Artificial Intelligence will take all our jobs in the future.",
+            "Social media does more harm than good to teenagers."
+        ];
+        function refreshClaim() {
+            const randomClaim = claims[Math.floor(Math.random() * claims.length)];
+            document.getElementById('opponent-claim').innerText = `"${randomClaim}"`;
+        }
+
+        // Phase 4: Fallacies
+        const fallacyQs = [
+            { q: "You shouldn't listen to his argument on economy, he failed math in high school!", a: "Ad Hominem" },
+            { q: "We either ban all plastic now, or we let the ocean die completely. There is no middle ground!", a: "False Dilemma" },
+            { q: "My opponent says we should spend more on education. He clearly wants to leave our country defenseless by cutting military budget!", a: "Strawman" }
+        ];
+        let currentFallacyIndex = 0;
+
+        function checkFallacy(btn, type) {
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden');
+            if (type === fallacyQs[currentFallacyIndex].a) {
+                feedback.innerText = "Correct! Well done.";
+                feedback.className = "mt-4 text-center font-bold text-emerald-600";
+                setTimeout(() => {
+                    currentFallacyIndex = (currentFallacyIndex + 1) % fallacyQs.length;
+                    document.getElementById('fallacy-q').innerText = `"${fallacyQs[currentFallacyIndex].q}"`;
+                    feedback.classList.add('hidden');
+                }, 2000);
+            } else {
+                feedback.innerText = "Try again! Look closely at the logic.";
+                feedback.className = "mt-4 text-center font-bold text-rose-600";
+            }
+        }
+
+        // Phase 5: Timer
+        let timeLeft = 60;
+        let timerInterval;
+        const topics = [
+            "Is breakfast really the most important meal?",
+            "Should cats or dogs be the president of the world?",
+            "If you could have one superpower, what would it be?",
+            "Is the pineapple a valid pizza topping?",
+            "What is the best age to be and why?",
+            "If you found a time machine, where would you go?",
+            "Should schools start at 10 AM?"
+        ];
+
+        function newTopic() {
+            clearInterval(timerInterval);
+            timeLeft = 60;
+            updateTimerDisplay();
+            document.getElementById('random-topic').innerText = topics[Math.floor(Math.random() * topics.length)];
+            document.getElementById('timer-btn').disabled = false;
+            document.getElementById('timer-btn').innerText = "開始計時";
+            document.getElementById('timer-display').classList.remove('timer-running');
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                btn.innerText = "繼續計時";
+                document.getElementById('timer-display').classList.remove('timer-running');
+            } else {
+                document.getElementById('timer-display').classList.add('timer-running');
+                btn.innerText = "暫停計時";
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        alert("Time's up! Great job!");
+                        newTopic();
+                    }
+                }, 1000);
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>
